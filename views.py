@@ -115,3 +115,6 @@ class AlbumList(GallerySettingsMixin, ListView):
     template_name = 'gallery/album_list.html'
 
 
+class ImageFullView(ImageView):
+    template_name = 'gallery/image_full.html'
+

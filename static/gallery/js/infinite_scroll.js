@@ -4,17 +4,19 @@ var pagination_size = 40;
 var scroll_cursor = 0;
 
 function init_infinite_scroll() {
-        load_images_from_cursor(scroll_cursor);
+    load_images_from_cursor(scroll_cursor);
 }
 
-function check_infinite_scroll() {
+function check_infinite_scroll(event) {
 
     // Based on https://benjaminhorn.io/code/how-to-implement-infinite-scroll/
+    // Modified to handle a scrollable element nested within fixed elements by
+    // referring to event.target
     // Fetch variables
-    var scrollTop = window.scrollY;
-    var windowHeight = window.innerHeight;
-    var bodyHeight = document.body.scrollHeight - windowHeight;
-    var scrollPercentage = (scrollTop / bodyHeight);
+    let scrollTop = event.target.scrollTop;
+    let windowHeight = window.innerHeight;
+    let bodyHeight = event.target.scrollHeight - windowHeight;
+    let scrollPercentage = (scrollTop / bodyHeight);
 
     // if the scroll is more than 90% from the top, load more content.
     if (scrollPercentage > 0.7) {
@@ -38,16 +40,18 @@ function load_images_from_cursor(cursor) {
 
         if (i >= images.length) {
             // All images have been set to load
+            scroll_cursor += i;
             window.removeEventListener('scroll',check_infinite_scroll);
             return;
         }
 
-        // Re-justify once the data has loaded
-        images[i].addEventListener('load', justify_images);
-        // Show the image as they load hidden
-        thumbnails[i].style.display = 'block';
         var src = images[i].getAttribute('data-src');
         images[i].setAttribute('src', src);
+        // Re-justify once the data has loaded
+        images[i].addEventListener('load', justify_images);
+
+        // Show the image as they load hidden (can start loading)
+        thumbnails[i].style.display = 'block';
     }
 
     scroll_cursor += pagination_size;
@@ -55,4 +59,4 @@ function load_images_from_cursor(cursor) {
 }
 
 window.addEventListener('load',init_infinite_scroll);
-window.addEventListener('scroll',check_infinite_scroll);
+window.addEventListener('scroll',check_infinite_scroll,{ capture: true });

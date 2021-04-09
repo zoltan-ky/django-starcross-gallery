@@ -1,0 +1,9 @@
+<a href="{% url 'gallery:album_detail' album.pk album.slug  %}">
+  {% if album.display_highlight %}
+    {% with album.display_highlight as image %}
+      {% include "gallery/partials/thumbnail.html" %}
+    {% endwith %}
+  {% else %}
+    {% include "gallery/partials/thumbnail_empty.html" %}
+  {% endif %}
+</a>

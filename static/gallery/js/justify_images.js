@@ -9,12 +9,14 @@
 
 
 
-function justify_images() {
+function justify_images(event) {
 /** Fix the width each image in a container to fully justify each row */
 
     var container = document.getElementById('image_container');
-    // Get exact width of container - 1 to allow for rounding error
-    var container_width = container.getBoundingClientRect()['width'] - 1 ;
+    // Get exact width of container - 1 to allow for rounding error. Subtract 20
+    // for the scrollbarWidth which seems to be included in the content width
+    // (todo: get exact scrollbarWidth)
+    var container_width = container.getBoundingClientRect()['width'] - 20 ;
 
     // Find the images in the thumbnail container
     var images = document.querySelectorAll('.image');

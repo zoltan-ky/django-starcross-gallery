@@ -9,6 +9,7 @@ from PIL.ExifTags import TAGS
 from gallery import settings
 from pathlib import Path
 from datetime import datetime
+from django.utils import timezone
 import os
 
 
@@ -26,10 +27,27 @@ class Image(models.Model):
                                   format='JPEG',
                                   options={'quality': settings.GALLERY_RESIZE_QUALITY})
     date_uploaded = models.DateTimeField(auto_now_add=True)
+    date_taken = models.DateTimeField(null=True, blank=True)
 
     @cached_property
     def slug(self):
         return slugify(self.title, allow_unicode=True)
+
+    @cached_property
+    def size_str(self):
+        if not hasattr(self, 'width'):
+            #try:
+            with pImage.open(self.data.path) as img:
+                self.width = img.width
+                self.height = img.height
+                img.close()
+            #except (ValueError,):
+                # storage/cache seems to have not been created yet,
+                # this happens only on first admin pImage.open access,
+                # ok next time (fixme: sync)
+            #    self.width = 0
+            #    self.height = 0
+        return '%d x %d' % (self.width, self.height)
 
     @cached_property
     def exif(self):
@@ -53,10 +71,10 @@ class Image(models.Model):
                     exif_data['Exposure'] = "{0}/{1}".format(exif_data['ExposureTime'].numerator,
                                                              exif_data['ExposureTime'].denominator)
             img.close()
+        self.data.close()
         return exif_data
 
-    @cached_property
-    def date_taken(self):
+    def _date_taken(self):
         original_exif = self.exif.get('DateTimeOriginal')
         if not original_exif:
             return self.mtime
@@ -91,6 +109,15 @@ class Image(models.Model):
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        # The first save commits the uploaded file and creates self.data.file
+        super().save(*args, **kwargs)
+        # Preset date_taken: get exif date if exif exists else file
+        # modified date and save to allow db queries, and admin overrides
+        if not self.date_taken:  self.date_taken = self._date_taken()
+        # and re-save. (images are added/saved to db only once per 'lifetime')
+        super().save(*args, **kwargs.update({'force_insert':False, 'force_update':True}))
 
 
 class Album(models.Model):
