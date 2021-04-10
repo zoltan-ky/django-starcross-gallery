@@ -14,7 +14,7 @@ function check_infinite_scroll(event) {
     // referring to event.target
     // Fetch variables
     let scrollTop = event.target.scrollTop;
-    let windowHeight = window.innerHeight;
+    let windowHeight = event.target.clientHeight;
     let bodyHeight = event.target.scrollHeight - windowHeight;
     let scrollPercentage = (scrollTop / bodyHeight);
 
