@@ -1,2 +1,3 @@
 /django-starcross-gallery/
 migrations/
+__pycache__
