@@ -8,7 +8,6 @@ function init_infinite_scroll() {
 }
 
 function check_infinite_scroll(event) {
-
     // Based on https://benjaminhorn.io/code/how-to-implement-infinite-scroll/
     // Modified to handle a scrollable element nested within fixed elements by
     // referring to event.target
@@ -22,11 +21,9 @@ function check_infinite_scroll(event) {
     if (scrollPercentage > 0.7) {
         load_images_from_cursor(scroll_cursor);
     }
-
 }
 
 function load_images_from_cursor(cursor) {
-
     // Find the images in the thumbnail container
     var images = document.querySelectorAll('.image');
     var thumbnails = document.querySelectorAll('.thumbnail');
@@ -34,28 +31,22 @@ function load_images_from_cursor(cursor) {
     if (images == []) {
         return;
     }
-
     // Change the source of the next page of images
-    for (var i=scroll_cursor; i < scroll_cursor + pagination_size; i++) {
-
-        if (i >= images.length) {
-            // All images have been set to load
-            scroll_cursor += i;
-            window.removeEventListener('scroll',check_infinite_scroll);
-            return;
-        }
-
+    for (var i=scroll_cursor; i < scroll_cursor + pagination_size && i < images.length; i++) {
         var src = images[i].getAttribute('data-src');
         images[i].setAttribute('src', src);
         // Re-justify once the data has loaded
         images[i].addEventListener('load', justify_images);
-
         // Show the image as they load hidden (can start loading)
         thumbnails[i].style.display = 'block';
     }
-
-    scroll_cursor += pagination_size;
-
+    if (i >= images.length) {
+        // All images have been set to load
+        scroll_cursor += i;
+        window.removeEventListener('scroll',check_infinite_scroll);
+    } else {
+        scroll_cursor += pagination_size;
+    }
 }
 
 window.addEventListener('load',init_infinite_scroll);
