@@ -120,9 +120,10 @@ class Image(models.Model):
         super().save(*args, **kwargs)
         # Preset date_taken: get exif date if exif exists else file
         # modified date and save to allow db queries, and admin overrides
-        if not self.date_taken:  self.date_taken = self._date_taken()
+        if not self.date_taken: self.date_taken = self._date_taken()
         # and re-save. (images are added/saved to db only once per 'lifetime')
-        super().save(*args, **kwargs.update({'force_insert':False, 'force_update':True}))
+        kwargs.update({'force_insert':False, 'force_update':True})
+        super().save(*args, **kwargs)
 
 
 class Album(models.Model):
